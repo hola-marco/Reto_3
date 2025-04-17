@@ -41,13 +41,8 @@ El código está organizado en los siguientes archivos:
 - `operaciones.py` ⚙️: Implementa funciones auxiliares como agregar productos al carrito y calcular el total.
 - `excepciones.py` 🚨: Módulo dedicado al manejo de errores y excepciones.
 
-## 🔧 Instalación y Ejecución
-1. Clona el repositorio o descarga los archivos del proyecto. 📥
-2. Asegúrate de tener Python instalado en tu sistema. ✔️
-3. Ejecuta el archivo `main.py` desde la terminal o tu IDE favorito: 💻
-   ```bash
-   python main.py
 
 ## Repositorio 
 
 -- 
+https://github.com/Danitech97/reto_3entregar.1.git 
