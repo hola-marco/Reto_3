@@ -45,5 +45,5 @@ El código está organizado en los siguientes archivos:
 ## Repositorio 
 
 -- 
-https://github.com/Danitech97/reto_3entregar.1.git 
-https://github.com/hola-marco/Reto_3.git
+# https://github.com/Danitech97/reto_3entregar.1.git 
+# https://github.com/hola-marco/Reto_3.git
