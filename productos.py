@@ -62,3 +62,4 @@ class Tienda: # Se define la clase Tienda para gestionar productos
             self.historial.append(f"Modificado: {idp} - {nombre}") # Se agrega el idp al historial para saber que se ha modificado 
             return True
         return False # Se retorna False si el idp no existe en el diccionario de productos para que no se modifique
+    

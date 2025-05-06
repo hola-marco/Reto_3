@@ -14,6 +14,7 @@ class InterfazTienda: # Esta clase representa la interfaz gráfica de la tienda
         self.tienda.cargar_productos_iniciales()
         self.usuario_es_admin = False
         self.carrito = []
+        self .historial_ventas=[]
         self.menu_inicio() # Se llama al método menu_inicio para mostrar el menú principal al iniciar la aplicación
 
     
@@ -130,10 +131,11 @@ class InterfazTienda: # Esta clase representa la interfaz gráfica de la tienda
             valores = self.tree_productos.item(seleccion[0], "values")
             idp = valores[0]
             producto = self.tienda.productos.get(idp)
+
             cantidad = simpledialog.askinteger("Cantidad", f"Ingrese la cantidad de {producto['nombre']}:") # Con askinteger se le pide al cliente la cantidad de productos que quiere comprar
             if cantidad and cantidad > 0:
                 if cantidad <= producto["stock"]:
-                    self.carrito.append({"producto": producto["nombre"], "precio": producto["precio"], "cantidad": cantidad}) # Se agrega el producto al carrito
+                    self.carrito.append({"producto": producto["nombre"], "precio": producto["precio"], "cantidad": cantidad, }) # Se agrega el producto al carrito
                     producto["stock"] -= cantidad
                     mostrar_info(f"Agregado {producto['nombre']} al carrito")
                     self.actualizar_tabla_productos()
@@ -149,18 +151,33 @@ class InterfazTienda: # Esta clase representa la interfaz gráfica de la tienda
         if not self.carrito:
             mostrar_advertencia("El carrito está vacío") # Si el carrito de compras está vacío, se muestra un mensaje de advertencia
             return
+        nombre_cliente=simpledialog.askstring("Nombre  del Cliente ","Ingresa el nombre del cliente")
+        if not nombre_cliente:
+            mostrar_advertencia("Debes ingresar nombre ")
         factura_ventana = tk.Toplevel(self.root)
         factura_ventana.title("Factura")
         factura_ventana.geometry("400x400") # Se define el tamaño de la ventana de la factura
         tk.Label(factura_ventana, text="Factura de Compra", font=("Courier", 14, "bold")).pack(pady=10) # Se crea un label para mostrar el título de la factura
+        tk.Label(factura_ventana,text=f"cliente:{nombre_cliente}",font=("courier",12)).pack()
         frame = tk.Frame(factura_ventana) 
         frame.pack(pady=10) # Se crea un frame para mostrar los productos de la factura
         total = 0
         for item in self.carrito:
+
             linea = f"{item['cantidad']} x {item['producto']:<12} ${item['precio']:.2f} = ${item['cantidad'] * item['precio']:.2f}"# Se define la linea de la factura para mostrar los productos
             tk.Label(frame, text=linea, font=("Courier", 10)).pack(anchor="w") # En esta linea se muestra la linea de la factura para que el cliente la vea
             total += item['cantidad'] * item['precio']
+        
         tk.Label(factura_ventana, text=f"\nTotal a pagar: ${total:.2f}", font=("Courier", 12, "bold")).pack() # Se muestra el total a pagar en la factura
+        
+# Guardar la venta
+        venta = {
+    "cliente": nombre_cliente,
+    "items": self.carrito.copy(),
+    "total": total
+}
+        self.historial_ventas.append(venta)
+        self.carrito.clear()
         tk.Button(factura_ventana, text="Volver al menú principal", command=lambda: [factura_ventana.destroy(), self.menu_inicio()]).pack(pady=20) # Se crea un botón para volver al menú principal
 
     def ventana_admin_login(self):# Aca se define el método para mostrar la ventana de inicio de sesión del administrador
@@ -175,6 +192,8 @@ class InterfazTienda: # Esta clase representa la interfaz gráfica de la tienda
         self.canvas.create_text(325, 185, text="Contraseña:", fill="black")
         login_btn = tk.Button(self.root, text="Ingresar", command=self.verificar_login_admin) # Se crea un botón para iniciar sesión 
         self.canvas.create_window(325, 240, window=login_btn)
+        # tk.Button(self.root, text="Ver Historial de Ventas", font=("Arial", 12), bg="#FFB6C1",
+        #  command=self.mostrar_historial_ventas).pack(pady=5)
 
     def verificar_login_admin(self): # Se define el método para verificar las credenciales del administrador 
         usuario = self.user_entry.get()
@@ -203,8 +222,10 @@ class InterfazTienda: # Esta clase representa la interfaz gráfica de la tienda
             ("Agregar", self.agregar_producto),
             ("Modificar", self.modificar_producto),
             ("Eliminar", self.eliminar_producto),
-            ("Ver Historial", self.ver_historial),
+            ("Ver Historial frutas agregadas", self.ver_historial ),
+            ("Ver Historial de ventas",self.mostrar_historial_ventas),
             ("Volver", self.menu_inicio)
+
         ]
         for i, (texto, comando) in enumerate(botones): # Se itera sobre la lista de botones
             btn = tk.Button(self.root, text=texto, command=comando)
@@ -259,3 +280,21 @@ class InterfazTienda: # Esta clase representa la interfaz gráfica de la tienda
     def ver_historial(self): # Se define el método para ver el historial de acciones
         historial = "\n".join(self.tienda.historial)# Se obtiene el historial de acciones de la tienda
         messagebox.showinfo("Historial de acciones", historial) # & Se muestra el historial de acciones en un cuadro de mensaje
+    def mostrar_historial_ventas(self):
+       if not self.historial_ventas:
+        mostrar_info("No hay ventas registradas aún.")
+        return
+
+       ventana_historial = tk.Toplevel(self.root)
+       ventana_historial.title("Historial de Ventas")
+       ventana_historial.geometry("500x500")
+
+       tk.Label(ventana_historial, text="Historial de Ventas", font=("Courier", 14, "bold")).pack(pady=10)
+       for venta in self.historial_ventas:
+         tk.Label(ventana_historial, text=f"Cliente: {venta['cliente']}", font=("Courier", 12, "bold")).pack(anchor="w", padx=10)
+         for item in venta["items"]:
+            linea = f"  {item['cantidad']} x {item['producto']} = ${item['cantidad'] * item['precio']:.2f}"
+            tk.Label(ventana_historial, text=linea, font=("Courier", 10)).pack(anchor="w", padx=20)
+         tk.Label(ventana_historial, text=f"  Total: ${venta['total']:.2f}\n", font=("Courier", 11)).pack(anchor="w", padx=10)
+         ganancia = venta['total'] * 0.01  # 1% de la venta
+         tk.Label(ventana_historial, text=f"  Ganancia: ${ganancia:.2f}\n", font=("Courier", 11)).pack(anchor="w", padx=10)
